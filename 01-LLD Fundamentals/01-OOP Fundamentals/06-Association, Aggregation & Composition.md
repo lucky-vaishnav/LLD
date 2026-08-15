@@ -422,6 +422,3 @@ We've covered:
 4. Inheritance vs Composition
 5. Polymorphism
 6. **Association, Aggregation & Composition** ← Today
-
-We're getting close to finishing the **core OOP/LLD fundamentals**. I'll explicitly tell you when we've completed that fundamentals phase, as requested.
-
