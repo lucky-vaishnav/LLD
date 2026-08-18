@@ -713,6 +713,293 @@ UPI / Card / Wallet
 * Dynamic implementation selection may indicate a **Factory/Registry** approach.
 
 ---
+```ts
+interface PaymentProcessor {
+  pay(amount: number): void;
+}
+
+class UpiPaymentProcessor implements PaymentProcessor {
+  pay(amount: number): void {
+    console.log(`Paid ₹${amount} using UPI`);
+  }
+}
+
+class CardPaymentProcessor implements PaymentProcessor {
+  pay(amount: number): void {
+    console.log(`Paid ₹${amount} using Card`);
+  }
+}
+
+class WalletPaymentProcessor implements PaymentProcessor {
+  pay(amount: number): void {
+    console.log(`Paid ₹${amount} using Wallet`);
+  }
+}
+
+class Customer {
+  constructor(
+    public readonly id: string,
+    public readonly name: string
+  ) {}
+}
+
+class MenuItem {
+  constructor(
+    public readonly id: string,
+    public readonly name: string,
+    public readonly price: number,
+    public readonly restaurantId: string
+  ) {}
+}
+
+class Menu {
+  private readonly items: MenuItem[] = [];
+
+  constructor(public readonly restaurantId: string) {}
+
+  addItem(item: MenuItem): void {
+    if (item.restaurantId !== this.restaurantId) {
+      throw new Error("Item belongs to a different restaurant");
+    }
+
+    this.items.push(item);
+  }
+
+  getItems(): MenuItem[] {
+    return [...this.items];
+  }
+}
+
+class Restaurant {
+  constructor(
+    public readonly id: string,
+    public readonly name: string,
+    public readonly menu: Menu
+  ) {}
+}
+
+class Cart {
+  private readonly items: MenuItem[] = [];
+  private restaurantId: string | null = null;
+
+  addItem(item: MenuItem): void {
+    if (
+      this.restaurantId !== null &&
+      this.restaurantId !== item.restaurantId
+    ) {
+      throw new Error("Cart can contain items from only one restaurant");
+    }
+
+    this.restaurantId = item.restaurantId;
+    this.items.push(item);
+  }
+
+  removeItem(itemId: string): void {
+    const index = this.items.findIndex(item => item.id === itemId);
+
+    if (index === -1) {
+      throw new Error("Item not found in cart");
+    }
+
+    this.items.splice(index, 1);
+
+    if (this.items.length === 0) {
+      this.restaurantId = null;
+    }
+  }
+
+  getItems(): MenuItem[] {
+    return [...this.items];
+  }
+
+  getTotal(): number {
+    return this.items.reduce((total, item) => total + item.price, 0);
+  }
+
+  isEmpty(): boolean {
+    return this.items.length === 0;
+  }
+}
+
+type OrderStatus =
+  | "CREATED"
+  | "CONFIRMED"
+  | "PREPARING"
+  | "READY"
+  | "DELIVERED"
+  | "CANCELLED";
+
+class Order {
+  private status: OrderStatus = "CREATED";
+
+  constructor(
+    public readonly id: string,
+    public readonly customer: Customer,
+    public readonly restaurantId: string,
+    private readonly items: MenuItem[],
+    public readonly totalAmount: number
+  ) {}
+
+  getStatus(): OrderStatus {
+    return this.status;
+  }
+
+  confirm(): void {
+    if (this.status !== "CREATED") {
+      throw new Error("Order cannot be confirmed in current state");
+    }
+
+    this.status = "CONFIRMED";
+  }
+
+  startPreparing(): void {
+    if (this.status !== "CONFIRMED") {
+      throw new Error("Order cannot start preparing");
+    }
+
+    this.status = "PREPARING";
+  }
+
+  markReady(): void {
+    if (this.status !== "PREPARING") {
+      throw new Error("Order cannot be marked ready");
+    }
+
+    this.status = "READY";
+  }
+
+  deliver(): void {
+    if (this.status !== "READY") {
+      throw new Error("Order cannot be delivered");
+    }
+
+    this.status = "DELIVERED";
+  }
+
+  cancel(): void {
+    if (
+      this.status !== "CREATED" &&
+      this.status !== "CONFIRMED"
+    ) {
+      throw new Error("Order cannot be cancelled");
+    }
+
+    this.status = "CANCELLED";
+  }
+
+  getItems(): MenuItem[] {
+    return [...this.items];
+  }
+}
+
+class PaymentService {
+  constructor(
+    private readonly paymentProcessor: PaymentProcessor
+  ) {}
+
+  pay(amount: number): void {
+    if (amount <= 0) {
+      throw new Error("Payment amount must be positive");
+    }
+
+    this.paymentProcessor.pay(amount);
+  }
+}
+
+class OrderService {
+  constructor(
+    private readonly paymentService: PaymentService
+  ) {}
+
+  placeOrder(
+    customer: Customer,
+    cart: Cart
+  ): Order {
+    if (cart.isEmpty()) {
+      throw new Error("Cannot place an empty order");
+    }
+
+    const items = cart.getItems();
+
+    const order = new Order(
+      crypto.randomUUID(),
+      customer,
+      items[0].restaurantId,
+      items,
+      cart.getTotal()
+    );
+
+    this.paymentService.pay(order.totalAmount);
+
+    order.confirm();
+
+    return order;
+  }
+}
+
+
+// Example usage
+
+const customer = new Customer(
+  "C001",
+  "Lucky"
+);
+
+const menu = new Menu("R001");
+
+const pizza = new MenuItem(
+  "M001",
+  "Pizza",
+  300,
+  "R001"
+);
+
+const burger = new MenuItem(
+  "M002",
+  "Burger",
+  200,
+  "R001"
+);
+
+menu.addItem(pizza);
+menu.addItem(burger);
+
+const restaurant = new Restaurant(
+  "R001",
+  "Food Palace",
+  menu
+);
+
+const cart = new Cart();
+
+cart.addItem(pizza);
+cart.addItem(burger);
+
+const paymentProcessor = new UpiPaymentProcessor();
+
+const paymentService = new PaymentService(
+  paymentProcessor
+);
+
+const orderService = new OrderService(
+  paymentService
+);
+
+const order = orderService.placeOrder(
+  customer,
+  cart
+);
+
+console.log(order.getStatus());
+
+order.startPreparing();
+
+order.markReady();
+
+order.deliver();
+
+console.log(order.getStatus());
+```
 
 # 🎉 LLD FUNDAMENTALS — COMPLETED
 
