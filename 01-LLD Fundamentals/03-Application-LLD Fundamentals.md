@@ -742,7 +742,3 @@ savingsAccount.transfer(currentAccount, 1000);
 console.log(savingsAccount.getBalance());
 console.log(currentAccount.getBalance());
 ```
-
-
-Take the questions one by one and explain your design. I'll review it afterward in the same **interview feedback + notes format** we've been using.
-
