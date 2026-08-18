@@ -753,6 +753,68 @@ And you've applied them across:
 4. Food Ordering System
 ```
 
+### 📝 When to use Class vs Interface vs Service
+
+| Use           | When                                                                                                                                                                                     |
+| ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Class**     | When you need to represent an **object/domain concept** that owns state and/or behavior. Use it when the behavior is concrete and doesn't need multiple interchangeable implementations. |
+| **Interface** | When you need to define a **contract/abstraction** and expect multiple implementations, interchangeable behavior, or want to decouple high-level code from concrete implementations.     |
+| **Service**   | When you have a **business workflow/orchestration** that coordinates multiple objects/components rather than owning the core state itself.                                               |
+
+### 🧠 Simple mental model
+
+```text
+Class
+→ "What is this object and what does it own/do?"
+
+Interface
+→ "What contract/capability do I need, regardless of implementation?"
+
+Service
+→ "What workflow needs to coordinate multiple things?"
+```
+
+### Examples
+
+```text
+BankAccount
+→ Class
+→ owns balance + deposit/withdraw rules
+
+PaymentProcessor
+→ Interface
+→ Card / UPI / Wallet can implement it
+
+OrderService
+→ Service
+→ coordinates Cart → Order → Payment
+```
+
+### One important correction
+
+Don't think:
+
+> **"No polymorphism → class, polymorphism → interface."**
+
+That's a useful starting heuristic, but not a strict rule.
+
+Also don't create a service just because something is called an "operation."
+
+Ask:
+
+> **Does this behavior naturally belong to an object that owns the relevant state?**
+
+If yes → put it in the **domain class**.
+
+If it's a larger workflow involving multiple objects → a **service** may be appropriate.
+
+And one more senior-level rule:
+
+> **Don't create an interface, service, or abstraction until there is a design reason for it.**
+
+This will help you avoid over-engineering in LLD interviews.
+
+
 ## 🚀 Next phase: Design Patterns
 
 From the next session, we'll start **Design Patterns**.
