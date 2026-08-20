@@ -862,3 +862,250 @@ Creator
 And the one-line definition for your notes:
 
 > **Factory Method defines an object-creation method in a Creator abstraction and lets subclasses decide which concrete Product to create.**
+---
+### Question - 
+still seems like coder or developer still sending which object to use according to notification type so i think its still dependent on input , caller don't know what notification is send is false statement then from you.. so this pattern don't give 100% abstraction , so what is the actual use case of factory method just for code structure , good code structure or if multiple teams working on multiple implementation then only i think?
+
+---
+Yes — **your criticism is correct**, and I want to correct the earlier statement clearly.
+
+I overstated the idea that Factory Method means *"the caller doesn't need to know which notification to use."* **That is not the defining benefit of Factory Method.**
+
+### The important distinction
+
+Factory Method does **not** necessarily hide the *business decision* of which product is needed.
+
+It hides/delegates the **creation mechanism**.
+
+So if the application receives:
+
+```text
+notificationType = EMAIL
+```
+
+some part of the application still has to decide:
+
+> "This request requires Email."
+
+Factory Method doesn't magically remove that decision.
+
+---
+
+# So what is the actual use case?
+
+The real problem Factory Method solves is:
+
+> **A base workflow is stable, but the concrete object used by that workflow needs to vary. We want subclasses to control that creation without changing the base workflow.**
+
+For example, imagine a document-processing system:
+
+```text
+DocumentProcessor
+        │
+        └── process()
+              │
+              ├── validate()
+              ├── createParser()   ← Factory Method
+              └── parse()
+```
+
+Different processors:
+
+```text
+PDFProcessor
+    ↓
+creates PDFParser
+
+WordProcessor
+    ↓
+creates WordParser
+
+ExcelProcessor
+    ↓
+creates ExcelParser
+```
+
+The **workflow** is common:
+
+```text
+validate
+   ↓
+create parser
+   ↓
+parse
+```
+
+But the parser varies.
+
+That is where Factory Method becomes useful.
+
+---
+
+# And yes — it is partly about structure
+
+You said:
+
+> "So this pattern don't give 100% abstraction, so is the actual use case just good code structure?"
+
+**Yes, partly.**
+
+Design patterns are not magic abstraction mechanisms.
+
+Factory Method gives you:
+
+### 1. Separation of creation from workflow
+
+```text
+Base Creator
+   ↓
+common workflow
+
+Subclass
+   ↓
+creation decision
+```
+
+### 2. Polymorphic creation
+
+The base workflow can call:
+
+```ts
+this.createProduct();
+```
+
+without knowing which concrete product will be created.
+
+### 3. Easier extension
+
+A new product can often be introduced through a new creator subclass without modifying the common workflow.
+
+### 4. Framework/library extensibility
+
+This is one of the **strongest real-world use cases**.
+
+A framework can define:
+
+```ts
+abstract class Framework {
+  abstract createConnection(): Connection;
+
+  start() {
+    const connection = this.createConnection();
+    connection.connect();
+    // common framework logic...
+  }
+}
+```
+
+Different implementations provide:
+
+```text
+PostgresFramework
+    ↓
+PostgresConnection
+
+MongoFramework
+    ↓
+MongoConnection
+```
+
+The framework controls the workflow, while the implementation controls what gets created.
+
+---
+
+# What Factory Method does NOT solve
+
+It does **not** necessarily solve:
+
+> "The system receives `EMAIL` and automatically knows everything without anyone deciding."
+
+That's a **different problem**.
+
+For that, you might use:
+
+```text
+Factory
+Registry
+Dependency Injection container
+Configuration
+Strategy
+Routing
+```
+
+depending on the architecture.
+
+---
+
+# And your "multiple teams" point
+
+That's **one possible reason**, but not the definition.
+
+Multiple teams/modules can benefit because each module can provide its own Creator:
+
+```text
+Core framework
+      ↓
+NotificationCreator
+      ↑
+ ┌────┼─────────┐
+Team A   Team B   Team C
+  ↓        ↓        ↓
+Email     SMS      Push
+```
+
+But you **don't need multiple teams** to justify Factory Method.
+
+It can be useful even in one team if:
+
+```text
+common workflow
+       +
+varying product creation
+       +
+polymorphic creators
+```
+
+exists.
+
+---
+
+# 🧠 The easiest way to remember it
+
+Don't think:
+
+> **Factory Method = hide which object the caller wants.** ❌
+
+Think:
+
+> **Factory Method = let subclasses decide how/which product to create while the parent controls the common workflow.** ✅
+
+And compare:
+
+```text
+Simple Factory
+→ "Give me an object based on this type."
+
+Factory Method
+→ "I have a common workflow, but subclasses decide which object that workflow creates."
+```
+
+---
+
+## One more important point for your LLD learning
+
+Your instinct here is **exactly what I want you to develop**.
+
+You didn't just accept:
+
+> "Factory Method = abstraction = good."
+
+You challenged:
+
+> "But the developer still has to decide the type, so what problem did we actually solve?"
+
+That's the right LLD mindset.
+
+**We should not use Factory Method for our Notification example just to make the design look sophisticated.** For that simple `EMAIL/SMS/PUSH` selection problem, a Simple Factory or another selection mechanism is likely more appropriate.
+
+So I would **not consider the Notification example a good primary example for teaching Factory Method**. The Document Processor / Parser example is much better for understanding the actual pattern.
+
