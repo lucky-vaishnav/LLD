@@ -1109,3 +1109,89 @@ That's the right LLD mindset.
 
 So I would **not consider the Notification example a good primary example for teaching Factory Method**. The Document Processor / Parser example is much better for understanding the actual pattern.
 
+---
+### Question -
+closures can be useful when implementing a factory function in JavaScript?
+
+Yes, **closures can be useful when implementing a factory function in JavaScript**, especially when you want the factory to keep some private configuration/state.
+
+But one important distinction:
+
+> **Closure is a JavaScript language feature; Factory is a design pattern.**
+> A factory function can use a closure, but it doesn't have to.
+
+### Small example
+
+```js
+function createNotificationFactory(config) {
+  // config is captured by the closure
+
+  return function createNotification(type) {
+    if (type === "email") {
+      return {
+        send(message) {
+          console.log(`Email via ${config.emailProvider}: ${message}`);
+        }
+      };
+    }
+
+    if (type === "sms") {
+      return {
+        send(message) {
+          console.log(`SMS via ${config.smsProvider}: ${message}`);
+        }
+      };
+    }
+
+    throw new Error("Unsupported notification type");
+  };
+}
+
+const createNotification = createNotificationFactory({
+  emailProvider: "SendGrid",
+  smsProvider: "Twilio"
+});
+
+const email = createNotification("email");
+
+email.send("Welcome!");
+```
+
+Here:
+
+```text
+createNotificationFactory()
+        ↓
+captures config
+        ↓
+returns createNotification()
+        ↓
+createNotification() still has access to config
+```
+
+Even though `createNotificationFactory()` has already finished executing, the returned function can still access:
+
+```js
+config.emailProvider
+config.smsProvider
+```
+
+That's the **closure**.
+
+### 🧠 For your notes
+
+> **Factory function:** creates and returns objects based on some input/context.
+
+> **Closure:** allows the returned factory function to retain access to variables from its outer scope.
+
+So:
+
+```text
+Factory Function
+    +
+Closure
+    ↓
+Factory can retain private configuration/state
+```
+
+And this is particularly relevant in **JavaScript/Node.js**, because factory functions + closures are a common alternative to class-based object creation.
