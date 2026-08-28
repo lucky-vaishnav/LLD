@@ -1,4 +1,4 @@
-# LLD Design Patterns — Interview Cheat Sheet
+# LLD Design Patterns — Cheat Sheet
 
 Idea is not to create another set of detailed notes. We already have those. This sheet should answer, in **10–15 minutes**, the questions most likely to ask:
 
