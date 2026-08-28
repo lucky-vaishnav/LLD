@@ -244,5 +244,5 @@ And sometimes the correct interview answer is:
 That's actually a **stronger senior-level answer** than forcing a pattern into the design.
 
 ---
-That will also tell us whether any of these 14 patterns need to be revisited before your interview.
+That will also tell us whether any of these 14 patterns need to be revisited before any interview.
 
